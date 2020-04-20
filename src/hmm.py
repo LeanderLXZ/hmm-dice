@@ -1,7 +1,7 @@
 class HMM(object):
-    
+
     def __init__(self, file_path):
-        
+
         self.file_path = file_path
         self.initial_proba = {}
         self.transition_proba = {}
@@ -11,7 +11,7 @@ class HMM(object):
         self.emissions = []
         self.real_states = []
         self.get_input_values()
-    
+
     def load_file(self):
         lines = []
         with open(self.file_path, 'r') as f:
@@ -26,10 +26,10 @@ class HMM(object):
 
     def get_input_values(self):
         l = self.load_file()
-        
+
         # Initial probabilities
         self.initial_proba = {s:0.33333333 for s in self.states_list}
-        
+
         # Transition probabilities
         for i in self.states_list:
             dict_i = {}
@@ -43,10 +43,10 @@ class HMM(object):
         # Emission probabilities
         for i, s in enumerate(self.states_list):
             self.emission_proba[s] = {j+1:v for j, v in enumerate(l[i+1])}
-        
+
         # Emissions
         self.emissions = l[4]
-            
+
         print('-' * 70)
         print('Input File:', self.file_path)
         print('-' * 70)
@@ -56,21 +56,22 @@ class HMM(object):
         print('Transition Probabilities:\n\t', self.transition_proba)
         print('Emission Probabilities:\n\t', self.emission_proba)
         print('Emissions:\n\t', self.emissions)
-        
+
         # Real states
         if len(l) > 5:
             self.real_states = l[5]
             print('Real States:\n\t', self.real_states)
-    
+
     def print_path(self, v_path):
         # Print a table of steps from dictionary
         yield 't:' + ' '.join('{:>7d}'.format(i) for i in range(len(v_path)))
         yield 'e:' + ' '.join('{:>7d}'.format(i) for i in self.emissions)
         for s in v_path[0]:
-            yield "{}:  ".format(s) + " ".join('{:.5f}'.format(v[s]['proba']) for v in v_path)
-        
+            yield "{}:  ".format(s) + " ".join(
+                '{:.5f}'.format(v[s]['proba']) for v in v_path)
+   
     def viterbi(self):
-        
+
         # Init t_0
         v_path = [{}]
         for s in self.states_list:
@@ -79,14 +80,14 @@ class HMM(object):
                     self.emission_proba[s][self.emissions[0]],
                 'pre_state': None
             }
-        
+
         # Calculate the viterbi path
         for t, e in enumerate(self.emissions[1:]):
             dict_t = {}
             # Current state
             for s in self.states_list:
                 proba_state = 0.
-                pre_state = self.states_list[0] 
+                pre_state = self.states_list[0]
                 # Previous state
                 for pre_s in self.states_list:
                     proba = v_path[t][pre_s]['proba'] * \
@@ -100,7 +101,7 @@ class HMM(object):
                 dict_t[s] = {'proba': proba_state, 'pre_state': pre_state}
             # Add current state to viterbi path
             v_path.append(dict_t)
-        
+
         # print('-' * 70)
         # print('Viterbi Path:')
         # for line in self.print_path(v_path):
@@ -113,28 +114,27 @@ class HMM(object):
             if value['proba'] > max_proba:
                 max_proba = value['proba']
                 state_selected = s
-        
+
         # Trace back the state path
         back_path = [state_selected]
         for v_t in v_path[::-1]:
             state_selected = v_t[state_selected]['pre_state']
             back_path.append(state_selected)
-        
+
         # The most possible state path
         state_path = back_path[-2::-1]
-        
+
         return state_path, max_proba
-    
+
     def run(self):
-        
+
         state_path, proba = self.viterbi()
         print('-' * 70)
         print('The steps of states are:')
         print('\t', state_path)
         print('with the highest probability of:\n\t', proba)
-            
+
 
 if __name__ == '__main__':
-    
+
     HMM('../inputs/dice_4.txt').run()
-            
