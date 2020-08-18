@@ -84,6 +84,7 @@ class HMM(object):
         # Calculate the viterbi path
         for t, e in enumerate(self.emissions[1:]):
             dict_t = {}
+            
             # Current state
             for s in self.states_list:
                 proba_state = 0.
